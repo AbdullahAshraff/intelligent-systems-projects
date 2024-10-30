@@ -1,25 +1,25 @@
-import numpy as np
-
 class SudokuCSP:
     def __init__(self, grid):
         self.grid = grid
 
     def is_valid(self, row, col, num):
-        # Check if num is in the row
-        if num in self.grid[row]:
+        if num in self.grid[row]:  # if exists in the same row
             return False
-        # Check if num is in the column
-        if num in [self.grid[i][col] for i in range(9)]:
+        if num in [self.grid[i][col] for i in range(9)]:  # if exists in the same column
             return False
-        # Check if num is in the 3x3 grid
+
+        # if exists in the 3x3 grid
         start_row, start_col = 3 * (row // 3), 3 * (col // 3)
-        for i in range(3):
-            for j in range(3):
-                if self.grid[start_row + i][start_col + j] == num:
+        for i in range(start_row, start_row + 3):
+            for j in range(start_col, start_col+ 3):
+                if self.grid[i][j] == num:
                     return False
         return True
 
     def find_empty_location(self):
+        """
+        Returns tuple (row, col) of the first empty cell in the grid.
+        """
         # Find the first empty cell in the grid
         for i in range(9):
             for j in range(9):
@@ -28,10 +28,13 @@ class SudokuCSP:
         return None
 
     def solve(self):
-        empty = self.find_empty_location()
-        if not empty:
+        """
+        Returns True if a solution is found, False otherwise.
+        """
+        empty_pos = self.find_empty_location()
+        if not empty_pos:
             return True  # Solution found
-        row, col = empty
+        row, col = empty_pos
 
         # Minimum Remaining Values (MRV) heuristic: Test numbers 1-9
         for num in range(1, 10):
@@ -43,8 +46,19 @@ class SudokuCSP:
         return False
 
     def display(self):
-        for row in self.grid:
-            print(" ".join(str(num) if num != 0 else '.' for num in row))
+        for i, row in enumerate(self.grid):
+            if i % 3 == 0 and i != 0:
+                print("------------------------")
+
+            for j, num in enumerate(row):
+                if j % 3 == 0 and j != 0:
+                    print(" | ", end="")
+
+                if j == 8:
+                    print(num if num != 0 else ". ")
+                else:
+                    print(f"{num} " if num != 0 else ". ", end="")
+
 
 # Define an initial unsolved Sudoku puzzle (0 represents an empty cell)
 initial_grid = [
@@ -56,15 +70,13 @@ initial_grid = [
     [7, 0, 0, 0, 2, 0, 0, 0, 6],
     [0, 6, 0, 0, 0, 0, 2, 8, 0],
     [0, 0, 0, 4, 1, 9, 0, 0, 5],
-    [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    [0, 0, 0, 0, 8, 0, 0, 7, 9],
 ]
 
-# Create a Sudoku CSP instance and solve the puzzle
 sudoku = SudokuCSP(initial_grid)
 print("Initial Sudoku State:")
 sudoku.display()
 
-# Solve the puzzle
 if sudoku.solve():
     print("\nSolved Sudoku State:")
     sudoku.display()
